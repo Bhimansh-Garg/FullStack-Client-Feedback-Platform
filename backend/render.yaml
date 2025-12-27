@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: feedback-platform-api
+    env: python
+    repo: https://github.com/yourusername/feedback-platform
+    region: oregon
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && python manage.py migrate && gunicorn feedback_platform.wsgi:application"
+    plan: free
+    healthCheckPath: /api/clients/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: FRONTEND_URL
+        value: https://your-frontend.vercel.app
+      
+databases:
+  - name: feedback-platform-db
+    databaseName: feedback_platform
+    user: feedback_user
+    plan: free

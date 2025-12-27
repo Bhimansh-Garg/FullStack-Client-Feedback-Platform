@@ -1,0 +1,219 @@
+<!-- frontend/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - FeedbackPro</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo">
+                    <div class="logo-icon">📊</div>
+                    <span class="logo-text">FeedbackPro</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="dashboard.html" class="nav-link active">Analytics</a>
+                <a href="submit-feedback.html" class="nav-link">Submit Feedback</a>
+            </nav>
+            <div class="nav-actions">
+                <button class="btn btn-outline" id="exportBtn">
+                    <span class="btn-icon">📥</span>
+                    Export Data
+                </button>
+                <button class="btn btn-primary" id="refreshBtn">
+                    <span class="btn-icon">🔄</span>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-main">
+        <div class="container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="header-content">
+                    <h1 class="dashboard-title">Analytics Dashboard</h1>
+                    <p class="dashboard-subtitle">Real-time insights from customer feedback</p>
+                </div>
+                <div class="header-actions">
+                    <div class="date-range">
+                        <select id="timeRange" class="select-input">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="365">Last year</option>
+                        </select>
+                    </div>
+                    <div class="client-filter">
+                        <select id="clientFilter" class="select-input">
+                            <option value="">All Clients</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Total Feedback</h3>
+                        <div class="metric-icon">📝</div>
+                    </div>
+                    <div class="metric-value" id="totalCount">-</div>
+                    <div class="metric-change positive">
+                        <span class="change-indicator">↗</span>
+                        <span id="countChange">-</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Average Rating</h3>
+                        <div class="metric-icon">⭐</div>
+                    </div>
+                    <div class="metric-value" id="averageRating">-</div>
+                    <div class="metric-stars" id="ratingStars"></div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Satisfaction Rate</h3>
+                        <div class="metric-icon">😊</div>
+                    </div>
+                    <div class="metric-value" id="satisfactionRate">-</div>
+                    <div class="metric-description">Ratings 4+ stars</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title">Response Rate</h3>
+                        <div class="metric-icon">📈</div>
+                    </div>
+                    <div class="metric-value" id="responseRate">-</div>
+                    <div class="metric-description">With comments</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <!-- Rating Distribution Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Rating Distribution</h3>
+                        <div class="chart-actions">
+                            <button class="chart-action" title="Download Chart">📥</button>
+                            <button class="chart-action" title="Fullscreen">🔍</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="ratingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sentiment Analysis Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Sentiment Analysis</h3>
+                        <div class="chart-actions">
+                            <button class="chart-action" title="Download Chart">📥</button>
+                            <button class="chart-action" title="Fullscreen">🔍</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Trends Chart -->
+                <div class="chart-card chart-wide">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Rating Trends Over Time</h3>
+                        <div class="chart-actions">
+                            <button class="chart-action" title="Download Chart">📥</button>
+                            <button class="chart-action" title="Fullscreen">🔍</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Tables Section -->
+            <div class="tables-grid">
+                <!-- Recent Feedback -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Feedback</h3>
+                        <button class="btn btn-sm btn-outline" id="viewAllFeedback">View All</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="recentFeedbackTable" class="data-table">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Keywords -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Popular Keywords</h3>
+                        <button class="btn btn-sm btn-outline" id="viewAllKeywords">View All</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="keywordsTable" class="keywords-grid">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading analytics...</p>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast error-toast hidden">
+        <div class="toast-content">
+            <div class="toast-icon">❌</div>
+            <div class="toast-message"></div>
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="successToast" class="toast success-toast hidden">
+        <div class="toast-content">
+            <div class="toast-icon">✅</div>
+            <div class="toast-message"></div>
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

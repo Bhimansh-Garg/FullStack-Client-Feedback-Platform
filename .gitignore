@@ -1,0 +1,77 @@
+# =====================================================
+# Python
+# =====================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# =====================================================
+# Django
+# =====================================================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# =====================================================
+# Environment / Virtual Environments
+# =====================================================
+.env
+.env.*
+/feedback_env/
+    # root-level venv ONLY
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# =====================================================
+# Databases / dumps
+# =====================================================
+*.sql
+
+# =====================================================
+# IDEs / Editors
+# =====================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =====================================================
+# OS files
+# =====================================================
+.DS_Store
+Thumbs.db
+
+# =====================================================
+# Frontend
+# =====================================================
+node_modules/
+.next/
+.vercel/
+dist/
+

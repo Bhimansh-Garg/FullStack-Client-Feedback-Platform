@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Feedback - FeedbackPro</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo">
+                    <div class="logo-icon">📊</div>
+                    <span class="logo-text">FeedbackPro</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="dashboard.html" class="nav-link">Analytics</a>
+                <a href="submit-feedback.html" class="nav-link active">Submit Feedback</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Feedback Form Section -->
+    <section class="feedback-section">
+        <div class="container">
+            <div class="feedback-container">
+                <div class="feedback-header">
+                    <h1 class="feedback-title">Share Your Experience</h1>
+                    <p class="feedback-subtitle">
+                        Your feedback helps us improve our services and better serve you in the future.
+                    </p>
+                </div>
+
+                <form id="feedbackForm" class="feedback-form">
+                    <!-- Client Selection -->
+                    <div class="form-group">
+                        <label for="client" class="form-label">Select Client/Company *</label>
+                        <select id="client" name="client" class="form-input" required>
+                            <option value="">Choose a client...</option>
+                        </select>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName" class="form-label">Your Name</label>
+                            <input type="text" id="customerName" name="customer_name" class="form-input" placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerEmail" class="form-label">Email Address</label>
+                            <input type="email" id="customerEmail" name="customer_email" class="form-input" placeholder="your@email.com">
+                        </div>
+                    </div>
+
+                    <!-- Rating Section -->
+                    <div class="form-group">
+                        <label class="form-label">Overall Rating *</label>
+                        <div class="rating-container">
+                            <div class="star-rating" id="starRating">
+                                <button type="button" class="star" data-rating="1">⭐</button>
+                                <button type="button" class="star" data-rating="2">⭐</button>
+                                <button type="button" class="star" data-rating="3">⭐</button>
+                                <button type="button" class="star" data-rating="4">⭐</button>
+                                <button type="button" class="star" data-rating="5">⭐</button>
+                            </div>
+                            <div class="rating-text" id="ratingText">Click to rate</div>
+                        </div>
+                        <input type="hidden" id="rating" name="rating" required>
+                    </div>
+
+                    <!-- Comment Section -->
+                    <div class="form-group">
+                        <label for="comment" class="form-label">
+                            Your Feedback
+                            <span class="form-optional">(Optional)</span>
+                        </label>
+                        <textarea 
+                            id="comment" 
+                            name="comment" 
+                            class="form-textarea" 
+                            rows="4" 
+                            placeholder="Share your thoughts, suggestions, or experiences...">
+                        </textarea>
+                        <div class="character-count">
+                            <span id="charCount">0</span> / 1000 characters
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="resetForm()">
+                            Reset Form
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span class="btn-text">Submit Feedback</span>
+                            <span class="btn-loading hidden">
+                                <div class="loading-spinner small"></div>
+                                Submitting...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="success-message hidden">
+                    <div class="success-icon">✅</div>
+                    <h3>Thank you for your feedback!</h3>
+                    <p>Your response has been recorded and will help us improve our services.</p>
+                    <button class="btn btn-primary" onclick="resetForm()">Submit Another</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast Notifications -->
+    <div id="errorToast" class="toast error-toast hidden">
+        <div class="toast-content">
+            <div class="toast-icon">❌</div>
+            <div class="toast-message"></div>
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <div id="successToast" class="toast success-toast hidden">
+        <div class="toast-content">
+            <div class="toast-icon">✅</div>
+            <div class="toast-message"></div>
+        </div>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/api.js"></script>
+    <script>
+        // Feedback form functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClients();
+            initializeStarRating();
+            initializeCharacterCount();
+            initializeFeedbackForm();
+        });
+
+        // Load clients for selection
+        async function loadClients() {
+            try {
+                const clients = await API.getClients();
+                const clientSelect = document.getElementById('client');
+                
+                clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = `${client.name} ${client.company ? `(${client.company})` : ''}`;
+                    clientSelect.appendChild(option);
+                });
+            } catch (error) {
+                showToast('Failed to load clients', 'error');
+            }
+        }
+
+        // Initialize star rating functionality
+        function initializeStarRating() {
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('rating');
+            const ratingText = document.getElementById('ratingText');
+            
+            const ratingTexts = {
+                1: 'Very Poor - Extremely disappointed',
+                2: 'Poor - Below expectations',
+                3: 'Average - Meets expectations',
+                4: 'Good - Above expectations',
+                5: 'Excellent - Exceeded expectations'
+            };
+
+            stars.forEach((star, index) => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    ratingInput.value = rating;
+                    ratingText.textContent = ratingTexts[rating];
+                    
+                    // Update star appearance
+                    stars.forEach((s, i) => {
+                        if (i < rating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    stars.forEach((s, i) => {
+                        if (i < rating) {
+                            s.classList.add('hover');
+                        } else {
+                            s.classList.remove('hover');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('starRating').addEventListener('mouseleave', function() {
+                stars.forEach(s => s.classList.remove('hover'));
+            });
+        }
+
+        // Initialize character count
+        function initializeCharacterCount() {
+            const textarea = document.getElementById('comment');
+            const charCount = document.getElementById('charCount');
+            
+            textarea.addEventListener('input', function() {
+                const count = this.value.length;
+                charCount.textContent = count;
+                
+                if (count > 1000) {
+                    charCount.style.color = '#ef4444';
+                    this.value = this.value.substring(0, 1000);
+                    charCount.textContent = 1000;
+                } else {
+                    charCount.style.color = '#6b7280';
+                }
+            });
+        }
+
+        // Initialize form submission
+        function initializeFeedbackForm() {
+            const form = document.getElementById('feedbackForm');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('submitBtn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                try {
+                    // Show loading state
+                    btnText.classList.add('hidden');
+                    btnLoading.classList.remove('hidden');
+                    submitBtn.disabled = true;
+                    
+                    // Prepare form data
+                    const formData = {
+                        client: document.getElementById('client').value,
+                        customer_name: document.getElementById('customerName').value,
+                        customer_email: document.getElementById('customerEmail').value,
+                        rating: parseInt(document.getElementById('rating').value),
+                        comment: document.getElementById('comment').value
+                    };
+
+                    // Validate required fields
+                    if (!formData.client || !formData.rating) {
+                        throw new Error('Please select a client and provide a rating');
+                    }
+
+                    // Submit feedback
+                    await API.submitFeedback(formData);
+                    
+                    // Show success message
+                    document.getElementById('feedbackForm').classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                    showToast('Feedback submitted successfully!', 'success');
+                    
+                } catch (error) {
+                    showToast(error.message, 'error');
+                } finally {
+                    // Reset button state
+                    btnText.classList.remove('hidden');
+                    btnLoading.classList.add('hidden');
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        // Reset form function
+        function resetForm() {
+            document.getElementById('feedbackForm').reset();
+            document.getElementById('rating').value = '';
+            document.getElementById('ratingText').textContent = 'Click to rate';
+            document.getElementById('charCount').textContent = '0';
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.remove('active');
+            });
+            
+            // Hide success message and show form
+            document.getElementById('successMessage').classList.add('hidden');
+            document.getElementById('feedbackForm').classList.remove('hidden');
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById(type === 'success' ? 'successToast' : 'errorToast');
+            const messageEl = toast.querySelector('.toast-message');
+            
+            messageEl.textContent = message;
+            toast.classList.remove('hidden');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 5000);
+            
+            // Close button functionality
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
